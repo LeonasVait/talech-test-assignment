@@ -1,42 +1,39 @@
 import React from "react";
 import { ButtonGroup, Button, FormControl } from "react-bootstrap";
 
-import { Product } from "../services/ProductService";
 import { useHistory } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+
+import { removeProduct, updateProduct } from "../state/actions";
+import { State } from "../state/reducers";
 
 interface Props {
-  product: Product;
   id: number;
-  onChange: (id: number, product: Product) => void;
-  onDelete: (id: number) => void;
 }
 
-export const ProductsListEntry: React.FC<Props> = ({
-  product,
-  onChange,
-  onDelete,
-  id
-}) => {
+export const ProductsListEntry: React.FC<Props> = ({ id }) => {
   const history = useHistory();
-  const isHighlight = product.quantity === 0;
+  const dispatch = useDispatch();
+  const product = useSelector((state: State) => state.products[id]);
+
+  const isHighlight = product && product.quantity === 0;
 
   return (
     <tr className={isHighlight ? "highlight" : ""}>
       <td>{product.name}</td>
       <td>{product.type}</td>
-      <td>{product.weight}</td>
-      <td>{product.color}</td>
-      <td>{product.ean}</td>
       <td>
         <FormControl
           type="number"
           value={"" + product.price}
           onChange={(event: any): void => {
             const newValue = parseFloat(event.target.value);
-            onChange(id, {
-              ...product,
-              price: newValue >= 0 ? newValue : product.price
-            });
+            dispatch(
+              updateProduct(id, {
+                ...product,
+                price: newValue >= 0 ? newValue : product.price
+              })
+            );
           }}
           min="0"
           size="sm"
@@ -49,10 +46,12 @@ export const ProductsListEntry: React.FC<Props> = ({
             value={"" + product.quantity}
             onChange={(event: any) => {
               const newValue = parseFloat(event.target.value);
-              onChange(id, {
-                ...product,
-                quantity: newValue >= 0 ? newValue : product.quantity
-              });
+              dispatch(
+                updateProduct(id, {
+                  ...product,
+                  quantity: newValue >= 0 ? newValue : product.quantity
+                })
+              );
             }}
             min="0"
             size="sm"
@@ -63,7 +62,9 @@ export const ProductsListEntry: React.FC<Props> = ({
         <input
           type="checkbox"
           checked={product.active}
-          onChange={() => onChange(id, { ...product, active: !product.active })}
+          onChange={() =>
+            dispatch(updateProduct(id, { ...product, active: !product.active }))
+          }
         ></input>
       </td>
       <td>
@@ -80,7 +81,10 @@ export const ProductsListEntry: React.FC<Props> = ({
           >
             EDIT
           </Button>
-          <Button variant="secondary" onClick={() => onDelete(id)}>
+          <Button
+            variant="secondary"
+            onClick={() => dispatch(removeProduct(id))}
+          >
             DELETE
           </Button>
         </ButtonGroup>
