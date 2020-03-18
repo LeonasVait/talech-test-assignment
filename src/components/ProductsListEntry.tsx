@@ -1,22 +1,90 @@
-import React, { useState } from "react";
+import React from "react";
+import { ButtonGroup, Button, FormControl } from "react-bootstrap";
+
 import { Product } from "../services/ProductService";
+import { useHistory } from "react-router";
 
 interface Props {
   product: Product;
-  key: number;
+  id: number;
+  onChange: (id: number, product: Product) => void;
+  onDelete: (id: number) => void;
 }
 
-export const ProductsListEntry: React.FC<Props> = ({ product }) => {
+export const ProductsListEntry: React.FC<Props> = ({
+  product,
+  onChange,
+  onDelete,
+  id
+}) => {
+  const history = useHistory();
+  const isHighlight = product.quantity === 0;
+
   return (
-    <div>
-      <span>{product.name}</span>
-      <span>{product.type}</span>
-      <span>{product.quantity}</span>
-      <span>{product.weight}</span>
-      <span>{product.price}</span>
-      <span>{product.color}</span>
-      <span>{product.ean}</span>
-      <span>{product.active}</span>
-    </div>
+    <tr className={isHighlight ? "highlight" : ""}>
+      <td>{product.name}</td>
+      <td>{product.type}</td>
+      <td>{product.weight}</td>
+      <td>{product.color}</td>
+      <td>{product.ean}</td>
+      <td>
+        <FormControl
+          type="number"
+          value={"" + product.price}
+          onChange={(event: any): void => {
+            const newValue = parseFloat(event.target.value);
+            onChange(id, {
+              ...product,
+              price: newValue >= 0 ? newValue : product.price
+            });
+          }}
+          min="0"
+          size="sm"
+        />
+      </td>
+      <td>
+        {
+          <FormControl
+            type="number"
+            value={"" + product.quantity}
+            onChange={(event: any) => {
+              const newValue = parseFloat(event.target.value);
+              onChange(id, {
+                ...product,
+                quantity: newValue >= 0 ? newValue : product.quantity
+              });
+            }}
+            min="0"
+            size="sm"
+          />
+        }
+      </td>
+      <td>
+        <input
+          type="checkbox"
+          checked={product.active}
+          onChange={() => onChange(id, { ...product, active: !product.active })}
+        ></input>
+      </td>
+      <td>
+        <ButtonGroup size="sm">
+          <Button
+            variant="secondary"
+            onClick={() => history.push(`/products/${id}`)}
+          >
+            VIEW
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => history.push(`/products/${id}/edit`)}
+          >
+            EDIT
+          </Button>
+          <Button variant="secondary" onClick={() => onDelete(id)}>
+            DELETE
+          </Button>
+        </ButtonGroup>
+      </td>
+    </tr>
   );
 };
