@@ -10,6 +10,47 @@ const initialState: State = {
   products: []
 };
 
+function writePriceHistory(product: Product): void {
+  let pHistLength = product.priceHistory.length;
+  if (
+    pHistLength === 0 ||
+    product.priceHistory[pHistLength - 1].value !== product.price
+  ) {
+    product.priceHistory.push({
+      value: product.price,
+      time: Date.now()
+    });
+    while (product.priceHistory.length > 5) {
+      product.priceHistory.shift();
+    }
+  }
+}
+
+function writeQuantityHistory(product: Product): void {
+  let qHistLength = product.quantityHistory.length;
+  if (
+    qHistLength === 0 ||
+    product.quantityHistory[qHistLength - 1].value !== product.quantity
+  ) {
+    product.quantityHistory.push({
+      value: product.quantity,
+      time: Date.now()
+    });
+    while (product.quantityHistory.length > 5) {
+      product.quantityHistory.shift();
+    }
+  }
+}
+
+function loadList(): Product[] {
+  try {
+    return JSON.parse(window.localStorage.getItem("ProductList") || "[]");
+  } catch (error) {
+    console.error(error);
+  }
+  return [];
+}
+
 export function productReducer(state = initialState, action: Action): State {
   switch (action.type) {
     case ActionType.ADD_PRODUCT:
@@ -35,26 +76,20 @@ export function productReducer(state = initialState, action: Action): State {
       };
 
     case ActionType.LOAD_LIST:
-      try {
-        return {
-          isEdited: false,
-          products: JSON.parse(
-            window.localStorage.getItem("ProductList") || "[]"
-          )
-        };
-      } catch (error) {
-        console.error(error);
-      }
       return {
         isEdited: false,
-        products: []
+        products: loadList()
       };
 
     case ActionType.SAVE_LIST:
-      window.localStorage.setItem(
-        "ProductList",
-        JSON.stringify(state.products)
-      );
+      const editedList = state.products.map(entry => {
+        writePriceHistory(entry);
+        writeQuantityHistory(entry);
+
+        return entry;
+      });
+
+      window.localStorage.setItem("ProductList", JSON.stringify(editedList));
       return {
         ...state,
         isEdited: false

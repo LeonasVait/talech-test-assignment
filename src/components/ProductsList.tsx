@@ -15,7 +15,11 @@ export const ProductsList: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  if (products.length === 0 && !isEdited) {
+  if (
+    products.length === 0 &&
+    !isEdited &&
+    window.localStorage.getItem("ProductList")
+  ) {
     dispatch(loadList());
   }
 

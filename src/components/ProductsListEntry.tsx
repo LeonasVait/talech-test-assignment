@@ -4,6 +4,7 @@ import { ButtonGroup, Button, FormControl } from "react-bootstrap";
 import { useHistory } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
+import { Product } from "../state/types";
 import { removeProduct, updateProduct } from "../state/actions";
 import { State } from "../state/reducers";
 
