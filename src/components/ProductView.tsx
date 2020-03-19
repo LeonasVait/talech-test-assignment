@@ -2,10 +2,13 @@ import React from "react";
 import { useParams, useHistory } from "react-router";
 import { State } from "../state/reducers";
 import { useSelector } from "react-redux";
+import HighCharts from "react-highcharts";
+import { Options, AxisLabelFormatterOptions, AxisOptions } from "highcharts";
 
 import "./ProductView.scss";
 
 import { Tabs, Tab, Container, Card, Row, Col } from "react-bootstrap";
+import { HistoryEntry } from "../state/types";
 
 export const ProductView: React.FC = () => {
   let { id } = useParams();
@@ -19,6 +22,36 @@ export const ProductView: React.FC = () => {
     history.push("/products");
     return <></>;
   }
+
+  const getChartOptions = (
+    historyEntries: HistoryEntry[],
+    title: string,
+    seriesName: string
+  ): Options => {
+    const axisOptions: AxisOptions = {
+      type: "datetime"
+    };
+
+    return {
+      chart: {
+        type: "line"
+      },
+      title: {
+        text: title
+      },
+
+      xAxis: axisOptions,
+      series: [
+        {
+          name: seriesName,
+          data: historyEntries.map(entry => ({
+            x: entry.time,
+            y: entry.value
+          }))
+        }
+      ]
+    };
+  };
 
   return (
     <Tabs defaultActiveKey="Preview" id="uncontrolled-tab-example">
@@ -72,10 +105,22 @@ export const ProductView: React.FC = () => {
         </Row>
       </Tab>
       <Tab eventKey="Price History" title="Price History">
-        <div>Price History</div>
+        <HighCharts
+          config={getChartOptions(
+            product.priceHistory,
+            "Price History",
+            "Price"
+          )}
+        />
       </Tab>
       <Tab eventKey="Quantity History" title="Quantity History">
-        <div>Quantity History</div>
+        <HighCharts
+          config={getChartOptions(
+            product.quantityHistory,
+            "Quantity History",
+            "Quantity"
+          )}
+        />
       </Tab>
     </Tabs>
   );

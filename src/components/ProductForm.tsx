@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useHistory } from "react-router";
 import { Form, Button, Container, Card } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,30 +7,39 @@ import "./ProductsForm.scss";
 
 import { State } from "../state/reducers";
 import { addProduct, updateProduct } from "../state/actions";
+import { Product } from "../state/types";
 
 export const ProductForm: React.FC = () => {
-  const { id } = useParams();
+  let { id } = useParams();
   const history = useHistory();
   const dispatch = useDispatch();
 
-  const [product, setProduct] = useState(
-    useSelector((state: State) =>
-      id !== undefined
-        ? state.products[parseInt(id)]
-        : {
-            name: "",
-            active: true,
-            color: "",
-            ean: "",
-            price: 0,
-            priceHistory: [],
-            quantity: 0,
-            quantityHistory: [],
-            type: "",
-            weight: 0
-          }
-    )
-  );
+  const [product, setProduct] = useState<Product>({
+    name: "",
+    active: true,
+    color: "",
+    ean: "",
+    price: 0,
+    priceHistory: [],
+    quantity: 0,
+    quantityHistory: [],
+    type: "",
+    weight: 0
+  });
+
+  const initial = useSelector((state: State) => {
+    if (id !== undefined) {
+      return state.products[parseInt(id)];
+    }
+  });
+
+  useEffect(() => {
+    if (!initial) {
+      id = undefined;
+      return;
+    }
+    setProduct(initial);
+  });
 
   return (
     <Container className="product-form">
